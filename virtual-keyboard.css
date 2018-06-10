@@ -1,0 +1,32 @@
+.virtual-keyboard {
+    display: inline-block;
+    background: white;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    user-select: none;
+    margin: .5rem;
+    white-space: nowrap;
+    border-radius: .3rem;
+}
+
+.virtual-keyboard .kb-row {
+    white-space: nowrap;
+}
+
+.virtual-keyboard .key {
+    display: inline-block;
+    vertical-align: bottom;
+    text-align: center;
+    margin: .2rem;
+    padding: .3rem 1rem;
+    line-height: 1.3rem;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid lightgrey;
+    border-radius: .3rem;
+    color: grey;
+    white-space: nowrap;
+}
+
+.virtual-keyboard .key:active {
+    background-color: lightgray;
+}
