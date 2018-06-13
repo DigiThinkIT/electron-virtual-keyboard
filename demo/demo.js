@@ -19,7 +19,7 @@ function createWindow() {
     })
 
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'test.html'),
+        pathname: path.join(__dirname, 'demo.html'),
         protocol: 'file:',
         slashes: true
     }))

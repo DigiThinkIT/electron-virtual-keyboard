@@ -354,7 +354,6 @@
             if ( this.config.autoPosition ) {
                 // figure out bottom center position of the element
                 var position = el.getBoundingClientRect();
-                console.log(el, position);
             }
 
             if ( this.config.autoPosition ) {
@@ -398,7 +397,7 @@
                 this.unfocusTimeout = null;
             }
 
-            if (!this.displayOnFocus) {
+            if (this.config.displayOnFocus) {
                 this.show(el);
             }
         }
@@ -412,7 +411,7 @@
             // if the input was unfocused due to clicking on the keyboard,
             // we'll be able to cancel the delayed function.
             this.unfocusTimeout = delayFn(() => {
-                if (this.displayOnFocus) {
+                if (this.config.displayOnFocus) {
                     this.hide(el);
                 }
                 this.unfocusTimeout = null;
@@ -477,6 +476,11 @@
      * @param {object} config 
      */
     $.fn.keyboard = function (config) {
+
+        var config = Object.assign({}, {
+            individual: false
+        }, config);
+
         if (!config && $(this).data('virtual-keyboard')) {
             return $(this).data('virtual-keyboard');
         }
