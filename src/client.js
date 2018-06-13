@@ -127,27 +127,84 @@
             this.$layoutContainer = $('<div class="layout"></div>');
             this.$layoutContainer.addClass(this.name);
             this.$container.append(this.$layoutContainer);
-            if ( this.name != 'normal' ) {
-                this.$layoutContainer.hide();
+            if ( this.name == 'normal' ) {
+                this.$layoutContainer.addClass('active');
+            }
+
+            // lets loop over layout once first to check if we have column layout
+            // this is defined as an array of arrays. Each row containing more than one
+            // string defines a new column
+            var columnCount = 1;
+            for (var i in this.layout) {
+                var layout = this.layout[i];
+                if ( layout.constructor == Array ) {
+                    if ( columnCount < layout.length ) {
+                        columnCount = layout.length;
+                    }
+                }
+            }
+
+            // build column containers
+            for (var i=0; i < columnCount; i++) {
+                this.$layoutContainer.append('<div class="kb-column"></div>');
             }
 
             // lets parse through layout lines and build keys
             for(var i in this.layout) {
-                var $row = $('<div class="kb-row"></div>');
-                this.$layoutContainer.append($row);
 
-                var keys = this.layout[i].split(/\s+/m);
-                for(var ki in keys) {
-                    var key = keys[ki];
-                    if ( typeof ki != 'function' ) {
-                        if ( key.length > 1 ) {
-                            // TODO: call custom key handlers
+                var layout = this.layout[i];
+                if ( layout.constructor != Array ) {
+                    layout = [layout];
+                }
+
+                for(var col in layout) {
+                    var $row = $('<div class="kb-row"></div>');
+                    this.$layoutContainer.find('.kb-column').eq(col).append($row);
+                    var keys = layout[col].split(/\s+/m);
+                    for(var ki in keys) {
+                        var key = keys[ki];
+                        if ( typeof ki != 'function' ) {
+                            var custom = null;
+                            var $key = $(this.config.keyTemplate);
+                            var text = key.length > 1?key.replace(/[\{\}]/gm, ''):key;
+                            var parts = text.split(':');
+                            var modifier = { mod: null, applied: [] };
+                            if ( parts.length > 1 ) {
+                                text = parts[0];
+                                modifier.mod = parts[1];
+                            }
+                            $key.text(text);
+                            $row.append($key);
+                            // test modifiers
+                            if ($.fn.keyboard_custom_modifiers && modifier.mod) {
+                                for (var pattern in $.fn.keyboard_custom_modifiers) {
+                                    var patternRx = new RegExp(pattern, 'ig');
+
+                                    if ( modifier.mod.search(patternRx) > -1 ) {
+                                        $.fn.keyboard_custom_modifiers[pattern](this.keyboard, $key, modifier);
+                                    }
+                                }
+                            }
+
+                            // test config.customKeys to apply customizations
+                            if ( this.config.customKeys ) {
+                                for(var pattern in this.config.customKeys) {
+                                    var patternRx = new RegExp(pattern, 'ig');
+
+                                    if (text.search(patternRx) > -1 ) {
+                                        custom = this.config.customKeys[pattern];
+                                        if (custom.render ) {
+                                            custom.render(this.keyboard, $key, modifier);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (custom && custom.handler ) {
+                                $key.data('kb-key-handler', custom.handler);
+                            }
+                            $key.data('kb-key', text);
                         }
-
-                        var $key = $(this.config.keyTemplate);
-                        $key.text(key);
-                        $key.data('kb-key', key);
-                        $row.append($key);
                     }
                 }
 
@@ -164,14 +221,23 @@
 
             this.$el = $el;
             this.config = Object.assign({
+                individual: false,
+                theme: null,
                 show: false,
                 displayOnFocus: true,
                 container: null,
                 autoPosition: true,
-                layout: $.fn.keyboard_layouts.default,
-                keyTemplate: '<span class="key"></span>'
+                layout: 'us-en', 
+                keyTemplate: '<span class="key"></span>',
+                customKeys: Object.assign({}, $.fn.keyboard_custom_keys)
             }, config);
             this.inited = false;
+
+            // replace layout key for layout definition lookup on $.fn.keyboard_layouts
+            if (typeof this.config.layout === 'string' || 
+                this.config.layout instanceof String) {
+                this.config.layout = $.fn.keyboard_layouts[this.config.layout];
+            }
 
             this.init();
         }
@@ -192,6 +258,18 @@
             if ( !this.config.container ) {
                 this.$container = $('<div class="virtual-keyboard"></div>');
                 $('body').append(this.$container);
+            } else if ( typeof this.config.container == 'function' ) {
+                this.$container = this.config.container(this.$el, this);
+                this.$container.addClass('virtual-keyboard');
+            }
+
+            if ( this.config.theme ) {
+                this.$container.addClass(this.config.theme);
+            }
+
+            if ( this.config.show ) {
+                this.$container.show();
+            } else {
                 this.$container.hide();
             }
 
@@ -208,7 +286,8 @@
             this.$container
                 .mousedown(function(e) {
                     base.simKeyDown(e.target);
-                })
+                });
+            $('body')
                 .mouseup(function (e) {
                     base.simKeyUp(e.target);
                 });
@@ -224,6 +303,36 @@
             }
 
             this.inited = true;
+        }
+
+        /**
+         * Displays the next layout or wraps back to the first one in the layout list.
+         */
+        toggleLayout() {
+            var $next = this.$container.find('.layout.active').next();
+            if ( $next.length == 0 ) {
+                $next = this.$container.find('.layout:first');
+            }
+
+            this.$container
+                .find('.layout')
+                .removeClass('active');
+            
+           $next.addClass('active');
+        }
+
+        /**
+         * Displays a layout by name
+         * @param {string} name 
+         */
+        showLayout(name) {
+            this.$container
+                .find('.layout')
+                .removeClass('active');
+
+            this.$container
+                .find('.layout.'+name)
+                .addClass('active');
         }
 
         /**
@@ -247,6 +356,23 @@
                 var position = el.getBoundingClientRect();
                 console.log(el, position);
             }
+
+            if ( this.config.autoPosition ) {
+                var x = position.x + ((position.width - this.$container.width()) / 2);
+                // keep container away from spilling outside window width
+                if ((x + this.$container.width()) > $(window).width) {
+                    x = $(window).width() - this.$container.width();
+                }
+                // but also make sure we don't spil out to the left window edge either(priority)
+                if ( x < 0 ) {
+                    x = 0;
+                }
+                this.$container.css({
+                    position: 'absolute',
+                    top: position.y + position.height,
+                    left: x
+                })
+            }
         }
 
         /**
@@ -262,6 +388,7 @@
          * @param {DomElement} el 
          */
         inputFocus(el) {
+
             // If we had an unfocus timeout function setup
             // and we are now focused back on an input, lets
             // cancel it and just move the keyboard into position.
@@ -270,7 +397,10 @@
                 this.unfocusTimeout.clear();
                 this.unfocusTimeout = null;
             }
-            this.show(el);
+
+            if (!this.displayOnFocus) {
+                this.show(el);
+            }
         }
 
         /**
@@ -282,8 +412,9 @@
             // if the input was unfocused due to clicking on the keyboard,
             // we'll be able to cancel the delayed function.
             this.unfocusTimeout = delayFn(() => {
-                console.log("Timeout Reached");
-                this.hide(el);
+                if (this.displayOnFocus) {
+                    this.hide(el);
+                }
                 this.unfocusTimeout = null;
             }, 500);
         }
@@ -308,7 +439,15 @@
             if ($(el).data('kb-key')) {
                 this.keydown = delayThenRepeat(() => {
                     $(this.currentElement).focus();
-                    this.pressKey($(el).data('kb-key'));
+                    var handler = $(el).data('kb-key-handler');
+                    var key = $(el).data('kb-key');
+                    if (handler ) {
+                        key = handler(this, $(el));
+                    }
+
+                    if ( key !== null && key !== undefined ) {
+                        this.pressKey(key);
+                    }
                 }, 500, 100);
             }
         }
@@ -348,47 +487,226 @@
             }
         });
 
-        var kb = new VirtualKeyboard($(this), config);
-        $(this).data('virtual-keyboard', kb);
+        if ( !config.individual ) {
+            var kb = new VirtualKeyboard($(this), config);
+            $(this).data('virtual-keyboard', kb);
 
-        return kb;
+            return kb;
+        } else {
+            return $(this).each(function() {
+                var kb = new VirtualKeyboard($(this), config);
+                $(this).data('virtual-keyboard', kb);
+            });
+        }
     };
 
-    $.fn.keyboard.keys = {
-        'enter': {
-            render: function(kb, key) {
-                return `<span class="action">${key.text.touppercase()}</span>`;
+    $.fn.keyboard_custom_modifiers = {
+        '(\\d+|\\*)(%|cm|em|ex|in|mm|pc|pt|px|vh|vw|vmin)?$': function(kb, $key, modifier) {
+            var size = modifier.mod;
+            if (size == '*') {
+                $key.addClass('fill');
+            } else {
+                if (size && size.search('[a-z]') == -1) {
+                    size += 'rem';
+                }
+                $key.width(size);
+                $key.addClass('sizer');
+            }
+
+            modifier.applied.push('size');
+        }
+    }
+
+    $.fn.keyboard_custom_keys = {
+        '^[`0-9~!@#$%^&*()_+\-=]$': {
+            render: function(kb, $key) {
+                $key.addClass('digit');
+            }
+        },
+        '^enter$': {
+            render: function(kb, $key) {
+                $key.text('\u23ce ' + $key.text());
+                $key.addClass('action enter');
             },
-            handler: function(kb, key) {
-                return '\n';
+            handler: function(kb, $key) {
+                return '\r';
             }
         }, 
-        'shift': {
-            render: function(kb, key) {
-                return `<span class="action">${key.text.touppercase()}</span>`;
+        '^shift$': {
+            render: function(kb, $key) {
+                $key.text('\u21e7 ' + $key.text());
+                $key.addClass('action shift');
             },
-            handler: function(kb, key) {
+            handler: function(kb, $key) {
                 kb.toggleLayout();
+                return null;
+            }
+        },
+        '^numeric$': {
+            render: function (kb, $key) {
+                $key.text('123');
+            },
+            handler: function(kb, $key) {
+                kb.showLayout('numeric');
+            }
+        },
+        '^abc$': {
+            handler: function (kb, $key) {
+                kb.showLayout('normal');
+            }
+        },
+        '^symbols$': {
+            render: function(kb, $key) {
+                $key.text('#+=');
+            },
+            handler: function (kb, $key) {
+                kb.showLayout('symbols');
+            }
+        },
+        '^caps$': {
+            render: function (kb, $key) {
+                $key.text('\u21e7');
+                $key.addClass('action shift');
+            },
+            handler: function (kb, $key) {
+                kb.showLayout('shift');
+                return null;
+            }
+        },
+        '^lower$': {
+            render: function (kb, $key) {
+                $key.text('\u21e7');
+                $key.addClass('action shift');
+            },
+            handler: function (kb, $key) {
+                kb.showLayout('normal');
+                return null;
+            }
+        },
+        '^space$': {
+            render: function(kb, $key) {
+                $key.addClass('space');
+            },
+            handler: function(kb, $key) {
+                return ' ';
+            }
+        },
+        '^tab$': {
+            render: function (kb, $key) {
+                $key.addClass('action tab');
+            },
+            handler: function (kb, $key) {
+                return '\t';
+            }
+        },
+        '^backspace$': {
+            render: function(kb, $key) {
+                $key.text('  \u21e6  ');
+                $key.addClass('action backspace');
+            },
+            handler: function(kb, $key) {
+                return '\b';
+            }
+        },
+        '^del(ete)?$': {
+            render: function (kb, $key) {
+                $key.addClass('action delete');
+            },
+            handler: function (kb, $key) {
+                return String.fromCharCode(127);
+            }
+        },
+        '^sp$': {
+            render: function(kb, $key, modifier) {
+                $key.empty();
+                $key.addClass('spacer');
+                if ( modifier.applied.indexOf('size') < 0) {
+                    $key.addClass('fill');
+                }
+            },
+            handler: function(kb, $key) {
                 return null;
             }
         }
     }
 
     $.fn.keyboard_layouts = {
-        'default': {
+        'us-en': {
             'normal': [
-                '` 1 2 3 4 5 6 7 8 9 0 - = {backspace}',
+                '{`:*} 1 2 3 4 5 6 7 8 9 0 - = {backspace:*}',
                 '{tab} q w e r t y u i o p [ ] \\',
-                'a s d f g h j k l ; \' {enter}',
-                '{shift} z x c v b n m , . / {shift}',
+                '{sp:2} a s d f g h j k l ; \' {enter}',
+                '{shift:*} z x c v b n m , . / {shift:*}',
                 '{space}'
             ],
             'shift': [
-                '{:fill} ~ ! @ # $ % ^ & * ( ) _ + {backspace} {:fill}',
-                '{:fill} {tab} Q W E R T Y U I O P { } | {:fill}',
-                '{:fill} A S D F G H J K L : " {enter} {:fill}',
-                '{:fill} {shift} Z X C V B N M < > ? {shift} {:fill}',
-                '{:fill} {space:10} {:fill}'
+                '{~:*} ! @ # $ % ^ & * ( ) _ + {backspace:*}',
+                '{tab} Q W E R T Y U I O P { } |',
+                '{sp:2} A S D F G H J K L : " {enter}',
+                '{shift:*} Z X C V B N M < > ? {shift:*}',
+                '{space}'
+            ]
+        },
+        'us-en:with-numpad': {
+            'normal': [
+                '` 1 2 3 4 5 6 7 8 9 0 - = {backspace:*}',
+                ['{tab} q w e r t y u i o p [ ] \\', '7 8 9'],
+                ['{sp:2} a s d f g h j k l ; \' {enter}', '4 5 6'],
+                ['{shift:*} z x c v b n m , . / {shift:*}', '1 2 3'],
+                ['{space}', '0']
+            ],
+            'shift': [
+                '~ ! @ # $ % ^ & * ( ) _ + {backspace:*}',
+                ['{tab} Q W E R T Y U I O P { } |', '7 8 9'],
+                ['{sp:2} A S D F G H J K L : " {enter}', '4 5 6'],
+                ['{shift:*} Z X C V B N M < > ? {shift:*}', '1 2 3'],
+                ['{space}', '0']
+            ]
+        },
+        'us-en:mobile': {
+            'normal': [
+                'q w e r t y u i o p',
+                'a s d f g h j k l',
+                '{caps:*} z x c v b n m {backspace:*}',
+                '{numeric} , {space:*} .  {enter}'
+            ],
+            'shift': [
+                'Q W E R T Y U I O P',
+                'A S D F G H J K L',
+                '{lower:*} Z X C V B N M {backspace:*}',
+                '{numeric} , {space:*} . {enter}'
+            ],
+            'numeric': [
+                '1 2 3 4 5 6 7 8 9 0',
+                '- / : ; ( ) $ & @ "',
+                '{symbols:*} {sp} . , ? ! \' {sp} {backspace:*}',
+                '{abc} , {space:*} . {enter}'
+            ],
+            'symbols': [
+                '[ ] { } # % ^ * + =',
+                '_ \ | ~ < >',
+                '{numeric:*} {sp} . , ? ! \' {Sp} {backspace:*}',
+                '{abc} , {space:*} . {enter}'
+            ],
+        },
+        'us-en:mobile-with-numpad': {
+            'normal': [
+                ['q w e r t y u i o p', '7 8 9'],
+                ['a s d f g h j k l', '4 5 6'],
+                ['{caps:*} z x c v b n m {backspace:*}', '1 2 3'],
+                ['{numeric} , {space:*} .  {enter}', '0:2']
+            ],
+            'shift': [
+                ['Q W E R T Y U I O P', '& * ('],
+                ['A S D F G H J K L', '$ % ^'],
+                ['{lower:*} Z X C V B N M {backspace:*}', '! @ #'],
+                ['{numeric} , {space:*} . {enter}', '):2']
+            ],
+            'numeric': [
+                ['* + = - / : ; $ & @', '7 8 9'],
+                ['[ ] { } ( ) # % ^ "', '4 5 6'],
+                ['{lower:*} _ \\ | ~ ? ! \' {backspace:*}', '1 2 3'],
+                ['{abc} < {space:*} > {enter}', '0:2']
             ]
         }
     };

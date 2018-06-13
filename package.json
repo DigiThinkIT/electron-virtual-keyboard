@@ -6,16 +6,12 @@
   "author": "forellana@digithinkit.com",
   "license": "MIT",
   "scripts": {
-    "start": "electron ./test/test.js"
+    "demo": "electron ./demo/demo.js"
   },
   "devDependencies": {
     "electron": "^2.0.2"
   },
   "dependencies": {
-    "@fortawesome/fontawesome": "^1.1.8",
-    "@fortawesome/fontawesome-free-brands": "^5.0.13",
-    "@fortawesome/fontawesome-free-regular": "^5.0.13",
-    "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "jquery": "^3.3.1"
   }
 }

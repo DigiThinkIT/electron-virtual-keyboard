@@ -3,9 +3,23 @@
     background: white;
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
     user-select: none;
-    margin: .5rem;
     white-space: nowrap;
     border-radius: .3rem;
+}
+
+.virtual-keyboard .layout {
+    display: none;
+    flex-direction: row;
+}
+
+.virtual-keyboard .layout .kb-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.virtual-keyboard .layout.active {
+    display: flex;
 }
 
 .virtual-keyboard .kb-row {
@@ -17,7 +31,7 @@
     vertical-align: bottom;
     text-align: center;
     margin: .2rem;
-    padding: .3rem 1rem;
+    padding: .3rem .7rem;
     line-height: 1.3rem;
     cursor: pointer;
     user-select: none;
@@ -25,8 +39,108 @@
     border-radius: .3rem;
     color: grey;
     white-space: nowrap;
+    min-width: 1rem;
+}
+
+.virtual-keyboard .key.spacer {
+    background: transparent;
+    border: none;
+    min-width: unset;
+}
+.virtual-keyboard .key.sizer {
+    min-width: unset;
+}
+
+.virtual-keyboard .key.fill {
+    flex: 1 1 auto;
 }
 
 .virtual-keyboard .key:active {
     background-color: lightgray;
+}
+
+.virtual-keyboard .kb-row {
+    display: flex;
+    justify-content: center;
+}
+.virtual-keyboard .key.space {
+    flex: unset;
+    width: 20rem;
+}
+
+.virtual-keyboard .key.space.fill {
+    flex: 1 1 auto;
+    width: unset;
+}
+
+.virtual-keyboard.theme-black {
+    background: #1b1b1b;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    user-select: none;
+    padding: .5rem;
+}
+
+.virtual-keyboard.theme-black .key {
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: rgb(56, 56, 56);
+    background: linear-gradient(#2c2c2c, rgb(65, 65, 65));
+    border-width: 0 0 .2rem 0;
+    border-style: none none solid none;
+    border-radius: .3rem;
+    border-color: rgb(15, 15, 15);
+    text-align: center;
+    color: rgb(187, 187, 187);
+    box-shadow: 0 0 5px 0 rgb(29, 29, 29);
+    cursor: pointer;
+    user-select: none;
+}
+
+.virtual-keyboard.theme-black .key:active {
+    margin-top: .4rem;
+    border-bottom-width: 0;
+    background-color: rgb(15, 15, 15);
+    background: linear-gradient(#202020, #353535);
+}
+
+.virtual-keyboard.theme-black .key.spacer {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.virtual-keyboard.theme-mac {
+    background: #e2e5e8;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+    user-select: none;
+    padding: .5rem;
+}
+
+.virtual-keyboard.theme-mac .key {
+    display: inline-block;
+    vertical-align: bottom;
+    background-color: rgb(250, 250, 250);
+    background: linear-gradient(#e8e8e8, #fff);
+    border-width: 0 0 .2rem 0;
+    border-style: none none solid none;
+    border-radius: .3rem;
+    border-color: #aaa;
+    text-align: center;
+    color: #aaa;
+    box-shadow: 0 0 5px 0 #aaa;
+    cursor: pointer;
+    user-select: none;
+}
+
+.virtual-keyboard.theme-mac .key:active {
+    margin-top: .4rem;
+    border-bottom-width: 0;
+    background-color: rgb(245, 245, 245);
+    background: linear-gradient(#dfd8d8, #f4f4f4);
+}
+
+.virtual-keyboard.theme-mac .key.spacer {
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }

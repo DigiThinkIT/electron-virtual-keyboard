@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+    <head>
+        
+        <script>
+            var jQuery = $ = require('jquery');
+            require('../src/client.js')(window, jQuery);
+        </script>
+
+        <link href="../virtual-keyboard.css" type="text/css" rel="stylesheet"/>
+        <style type="css/text">
+        body {
+            color: #fff;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="test">
+            <p>Input:text test</p>
+            <input class="kb" type="text"/>
+            <select>
+                <option default value="">Default</option>
+                <option value="theme-black">Black</option>
+                <option value="theme-mac">Mac</option>
+            </select>
+            <div class="kb-container"></div>
+        </div>
+        <div class="test">
+            <p>Input:text test wide keyboard</p>
+            <input class="kb-wide" type="text" />
+            <select>
+                <option default value="">Default</option>
+                <option value="theme-black">Black</option>
+                <option value="theme-mac">Mac</option>
+            </select>
+            <div class="kb-container"></div>
+        </div>
+        <div class="test">
+            <p>Input:text test mobile keyboard</p>
+            <input class="kb-mobile" type="text" />
+            <select>
+                <option default value="">Default</option>
+                <option value="theme-black">Black</option>
+                <option value="theme-mac">Mac</option>
+            </select>
+            <div class="kb-container"></div>
+        </div>
+        <div class="test">
+            <p>Input:password test</p>
+            <input class="kb" type="password"/>
+            <select>
+                <option default value="">Default</option>
+                <option value="theme-black">Black</option>
+                <option value="theme-mac">Mac</option>
+            </select>
+            <div class="kb-container"></div>
+        </div>
+        <div class="test">
+            <p>TextArea test</p>
+            <textarea class="kb"></textarea>
+            <select>
+                <option default value="">Default</option>
+                <option value="theme-black">Black</option>
+                <option value="theme-mac">Mac</option>
+            </select>
+            <div class="kb-container"></div>
+        </div>
+        <script type="text/javascript">
+            $('.kb').keyboard({
+                individual: true,
+                show: true,
+                displayOnFocus: false,
+                autoPosition: false,
+                container: function($el) { 
+                    return $el.parent().find('.kb-container');
+                }
+            });
+            $('.kb-wide').keyboard({ 
+                individual: true,
+                layout: 'us-en:with-numpad', 
+                show: true,
+                displayOnFocus: false,
+                autoPosition: false,
+                container: function ($el) {
+                    return $el.parent().find('.kb-container');
+                }
+            });
+            $('.kb-mobile').keyboard({ 
+                individual: true,
+                layout: 'us-en:mobile-with-numpad',
+                show: true,
+                displayOnFocus: false,
+                autoPosition: false,
+                container: function ($el) {
+                    return $el.parent().find('.kb-container');
+                }
+            });
+
+            $('.test > select').change(function() {
+                var theme = $(this).val();
+                $(this)
+                    .parent()
+                    .find('.virtual-keyboard')
+                    .removeClass(function (index, className) {
+                        return (className.match(/(^|\s)theme-\S+/g) || []).join(' ');
+                    })
+
+                if (theme) {
+                    $(this)
+                        .parent()
+                        .find('.virtual-keyboard')
+                        .addClass(theme);
+                }
+            });
+        </script>
+    </body>
+</html>
