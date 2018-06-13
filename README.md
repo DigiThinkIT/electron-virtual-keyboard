@@ -1,6 +1,6 @@
 # Electron Virtual Keyboard
 
-[[https://github.com/digithinkit/electron-virtual-keyboard/blob/master/assets/electron-virtual-keyboard-demo.gif]]
+<img src="https://raw.githubusercontent.com/DigiThinkIT/electron-virtual-keyboard/master/assets/electron-virtual-keyboard-demo.gif" height="200" />
 
 A themable JQuery virtual keyboard built to use Electron's webContent.sendInputEvent() api which minimizes input field event fighting with other libraries that might require modifying the input fields on the fly.
 
@@ -170,16 +170,16 @@ Custom keys are thus tied to keyboard layouts. Notice that the keys on ```$.fn.k
 There are 4 built in keyboard layouts to use, plus you can setup your own custom layouts.
 
 ### us-en
-[[https://github.com/digithinkit/electron-virtual-keyboard/blob/master/assets/electron-virtual-keyboard-us-en.gif]]
+<img src="https://raw.githubusercontent.com/DigiThinkIT/electron-virtual-keyboard/master/assets/electron-virtual-keyboard-us-en.gif" height="200" />
 
 ### us-en:with-numpad
-[[https://github.com/digithinkit/electron-virtual-keyboard/blob/master/assets/electron-virtual-keyboard-us-en-with-numpad.gif]]
+<img src="https://raw.githubusercontent.com/DigiThinkIT/electron-virtual-keyboard/master/assets/electron-virtual-keyboard-us-en-with-numpad.gif" height="200" />
 
 ### us-en:mobile
-[[https://github.com/digithinkit/electron-virtual-keyboard/blob/master/assets/electron-virtual-keyboard-us-en-mobile.gif]]
+<img src="https://raw.githubusercontent.com/DigiThinkIT/electron-virtual-keyboard/master/assets/electron-virtual-keyboard-us-en-mobile.gif" height="200" />
 
 ### us-en:mobile-with-numpad
-[[https://github.com/digithinkit/electron-virtual-keyboard/blob/master/assets/electron-virtual-keyboard-us-en-mobile-with-numpad.gif]]
+<img src="https://raw.githubusercontent.com/DigiThinkIT/electron-virtual-keyboard/master/assets/electron-virtual-keyboard-us-en-mobile-with-numpad.gif" height="200" />
 
 ### Custom Layouts
 
