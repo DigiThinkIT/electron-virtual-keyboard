@@ -1,6 +1,6 @@
 {
   "name": "electron-virtual-keyboard",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An electron based virtual keyboard. Uses electron's sendInputEvent api to implement a simple customizable soft keyboard.",
   "main": "index.js",
   "author": "forellana@digithinkit.com",

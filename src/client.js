@@ -351,15 +351,20 @@
         show(el) {
             this.$container.show();
 
-            if ( this.config.autoPosition ) {
+            if ( this.config.autoPosition && typeof this.config.autoPosition != 'function' ) {
+                var offset = $('body').offset();
                 // figure out bottom center position of the element
-                var position = el.getBoundingClientRect();
-            }
+                var bounds = el.getBoundingClientRect();
+                var position = {
+                    x: bounds.left + offset.left,
+                    y: bounds.top + offset.top,
+                    width: bounds.width,
+                    height: bounds.height
+                }
 
-            if ( this.config.autoPosition ) {
-                var x = position.x + ((position.width - this.$container.width()) / 2);
+                var x = position.x + ((position.width - this.$container.width()) / 2);``
                 // keep container away from spilling outside window width
-                if ((x + this.$container.width()) > $(window).width) {
+                if ((x + this.$container.width()) > $(window).width()) {
                     x = $(window).width() - this.$container.width();
                 }
                 // but also make sure we don't spil out to the left window edge either(priority)
@@ -370,7 +375,7 @@
                     position: 'absolute',
                     top: position.y + position.height,
                     left: x
-                })
+                });
             }
         }
 
