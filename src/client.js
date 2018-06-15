@@ -238,6 +238,7 @@
                 this.config.layout instanceof String) {
                 this.config.layout = $.fn.keyboard_layouts[this.config.layout];
             }
+            this._onMouseDown = false;
 
             this.init();
         }
@@ -276,19 +277,30 @@
             // hook up element focus events
             this.$el
                 .focus(function(e) {
+                    if (base._onMouseDown) {
+                        return;
+                    }
                     base.inputFocus(e.target);
                 })
                 .blur(function(e) {
+                    if (base._onMouseDown ) {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                        return false;
+                    }
+
                     base.inputUnFocus(e.target);
                 });
 
             // hook up mouse press down/up keyboard sims
             this.$container
                 .mousedown(function(e) {
+                    base._onMouseDown = true;
                     base.simKeyDown(e.target);
                 });
             $('body')
                 .mouseup(function (e) {
+                    base._onMouseDown = false;
                     base.simKeyUp(e.target);
                 });
 
@@ -439,13 +451,13 @@
                 $(this.currentElement).focus();
             }, 1);
 
-            // if we pressed on key setup interval to mimic repeated key presses
+            // if we pressed on key, setup interval to mimic repeated key presses
             if ($(el).data('kb-key')) {
                 this.keydown = delayThenRepeat(() => {
-                    $(this.currentElement).focus();
+                    //$(this.currentElement).focus();
                     var handler = $(el).data('kb-key-handler');
                     var key = $(el).data('kb-key');
-                    if (handler ) {
+                    if (handler) {
                         key = handler(this, $(el));
                     }
 

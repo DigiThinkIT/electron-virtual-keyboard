@@ -22,7 +22,6 @@ class VirtualKeyboard extends EventEmitter {
     }
 
     config(e, key, value) {
-        console.log("config: ", arguments);
         if ( key == 'keyPressWait' ) {
             this.keyPressWait = parseInt(value);
         }
@@ -42,7 +41,6 @@ class VirtualKeyboard extends EventEmitter {
     }
 
     flushBuffer() {
-        console.log(this.keyBuffer);
         var ch = this.keyBuffer.shift()
         if ( ch === undefined ) {
             this.flushing = false
