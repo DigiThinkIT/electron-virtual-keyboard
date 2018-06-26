@@ -294,12 +294,12 @@
 
             // hook up mouse press down/up keyboard sims
             this.$container
-                .mousedown(function(e) {
+                .on("mousedown touchstart", function(e) {
                     base._onMouseDown = true;
                     base.simKeyDown(e.target);
                 });
             $('body')
-                .mouseup(function (e) {
+                .on("mouseup touchend touchcancel", function(e) {
                     base._onMouseDown = false;
                     base.simKeyUp(e.target);
                 });
