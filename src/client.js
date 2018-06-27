@@ -295,13 +295,21 @@
             // hook up mouse press down/up keyboard sims
             this.$container
                 .on("mousedown touchstart", function(e) {
-                    base._onMouseDown = true;
-                    base.simKeyDown(e.target);
+                    if (!base._onMouseDown && $(e.target).data('kb-key') ) {
+                        base._onMouseDown = true;
+                        base.simKeyDown(e.target);
+
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
                 });
             $('body')
-                .on("mouseup touchend touchcancel", function(e) {
-                    base._onMouseDown = false;
-                    base.simKeyUp(e.target);
+                .on("mouseup touchend", function(e) {
+                    if ( base._onMouseDown) {
+                        console.log("up: ", e);
+                        base._onMouseDown = false;
+                        base.simKeyUp(e.target);
+                    }
                 });
 
             // init layout renderer
