@@ -396,6 +396,13 @@
                     top: position.y + position.height,
                     left: x
                 });
+            } else if (typeof this.config.autoPosition == 'function') {
+              var position = this.config.autoPosition(el, this.$container);
+              this.$container.css({
+                  position: 'absolute',
+                  top: position.top,
+                  left: position.left
+              });
             }
         }
 
