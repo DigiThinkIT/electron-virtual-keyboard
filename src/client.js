@@ -167,7 +167,7 @@
                             var custom = null;
                             var $key = $(this.config.keyTemplate);
                             var text = key.length > 1?key.replace(/[\{\}]/gm, ''):key;
-                            var parts = text.split(':');
+                            var parts = (text==":")?[":"]:text.split(':');
                             var modifier = { mod: null, applied: [] };
                             if ( parts.length > 1 ) {
                                 text = parts[0];
