@@ -306,7 +306,6 @@
             $('body')
                 .on("mouseup touchend", function(e) {
                     if ( base._onMouseDown) {
-                        console.log("up: ", e);
                         base._onMouseDown = false;
                         base.simKeyUp(e.target);
                     }
